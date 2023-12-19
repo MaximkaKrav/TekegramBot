@@ -2,7 +2,6 @@ import telebot
 from telebot import types
 
 bot = telebot.TeleBot('')
-
 tasks = {}  # Dictionary to store tasks for each user
 
 @bot.message_handler(commands=['start'])
