@@ -1,24 +1,24 @@
 import telebot
 from telebot import types
 
-bot = telebot.TeleBot('')
+# Чтение токена из файла
+with open('token.txt', 'r') as file:
+    TOKEN = file.read().strip()
+
+bot = telebot.TeleBot(TOKEN)
+
 tasks = {}  # Dictionary to store tasks for each user
 
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     markup = types.ReplyKeyboardMarkup(row_width=2)
-    test_button = types.KeyboardButton('Тест')
     add_task_button = types.KeyboardButton('Добавить задачу')
     show_tasks_button = types.KeyboardButton('Показать все задачи')
     delete_task_button = types.KeyboardButton('Удалить запись')
     delete_all_button = types.KeyboardButton('Удалить все записи')
-    markup.add(test_button, add_task_button, show_tasks_button, delete_task_button, delete_all_button)
+    markup.add( add_task_button, show_tasks_button, delete_task_button, delete_all_button)
 
     bot.send_message(message.chat.id, "Привет! Я твой тестовый бот. Нажми 'Тест' для приветствия, 'Добавить задачу' для добавления новой задачи, 'Показать все задачи' для просмотра задач, 'Удалить запись' для удаления задач, 'Удалить все записи' для удаления всех задач.", reply_markup=markup)
-
-@bot.message_handler(func=lambda message: message.text == 'Тест')
-def handle_test(message):
-    bot.send_message(message.chat.id, "Привет! Я твой бот. Как дела?")
 
 @bot.message_handler(func=lambda message: message.text == 'Добавить задачу')
 def handle_add_task(message):
