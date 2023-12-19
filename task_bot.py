@@ -1,7 +1,7 @@
 import telebot
 from telebot import types
 
-bot = telebot.TeleBot('6616174980:AAGNQeTbZn4dwkc1pRq25_zgJgIdbLEj7Jc')
+bot = telebot.TeleBot('')
 
 tasks = {}  # Dictionary to store tasks for each user
 
