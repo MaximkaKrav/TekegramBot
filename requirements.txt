@@ -1,4 +1,4 @@
-python-telegram-bot==latest
-nltk==latest
-flask==latest
-requests==latest
+python-telegram-bot
+nltk
+flask
+requests
