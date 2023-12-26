@@ -7,26 +7,32 @@ with open('token.txt', 'r') as file:
 
 bot = telebot.TeleBot(TOKEN)
 
-tasks = {}
-user_states = {}
+tasks = {}  # Dictionary to store tasks for each user
+user_states = {}  # Dictionary to track user states
+def handle_start(message):
+    user_id = message.from_user.id
+    username = message.from_user.username
 
+    bot.send_message(user_id, f"👋 Привет, {username}! Я твой бот. Что будем делать?")
 def send_welcome_message(message):
     username = message.from_user.username
-    markup = create_keyboard()
-    bot.send_message(message.chat.id, f"👋 Привет, {username}! Я твой менеджер задач. Что будем делать?", reply_markup=markup)
-    user_states[message.from_user.id] = {'first_start': False}
-
-def create_keyboard():
     markup = types.InlineKeyboardMarkup(row_width=2)
     add_task_button = types.InlineKeyboardButton('➕ Добавить задачу', callback_data='add_task')
     show_tasks_button = types.InlineKeyboardButton('📋 Показать все задачи', callback_data='show_tasks')
     markup.add(add_task_button, show_tasks_button)
 
-    return markup
+    bot.send_message(message.chat.id, f"👋 Привет, {username}! Я твой менеджер задач. Что будем делать?", reply_markup=markup)
+    user_states[message.from_user.id]['first_start'] = False
 
 def update_keyboard(message):
     user_id = message.from_user.id
-    markup = create_keyboard()
+    markup = types.InlineKeyboardMarkup(row_width=2)
+
+    add_task_button = types.InlineKeyboardButton('➕ Добавить задачу', callback_data='add_task')
+    markup.add(add_task_button)
+
+    show_tasks_button = types.InlineKeyboardButton('📋 Показать все задачи', callback_data='show_tasks')
+    markup.add(show_tasks_button)
 
     # Проверяем наличие задач для данного пользователя
     if user_id in tasks and tasks[user_id]:
@@ -56,29 +62,21 @@ def handle_callback_query(call):
         bot.send_message(message.chat.id, "📝 Введи название задачи:")
         bot.register_next_step_handler(message, add_task)
     elif call.data == 'show_tasks':
-        handle_show_tasks(message)
+        if user_id in tasks and tasks[user_id]:
+            task_list = '\n'.join(tasks[user_id])
+            bot.send_message(message.chat.id, f'📋 Твои задачи:\n{task_list}')
+        else:
+            bot.send_message(message.chat.id, '🤔 У тебя нет задач.')
     elif call.data == 'delete_task':
         bot.send_message(message.chat.id, "🗑️ Выбери какую запись ты хочешь удалить (введи номер или полное название):")
         bot.register_next_step_handler(message, delete_task)
     elif call.data == 'delete_all':
-        handle_delete_all(message)
+        if user_id in tasks:
+            del tasks[user_id]  # Удаляем все задачи пользователя
+        bot.send_message(message.chat.id, '🗑️ Все записи успешно удалены.')
 
-def handle_show_tasks(message):
-    user_id = message.from_user.id
-    if user_id in tasks and tasks[user_id]:
-        task_list = '\n'.join(tasks[user_id])
-        bot.send_message(message.chat.id, f'📋 Твои задачи:\n{task_list}')
-    else:
-        bot.send_message(message.chat.id, '🤔 У тебя нет задач.')
-
-def handle_delete_all(message):
-    user_id = message.from_user.id
-    if user_id in tasks:
-        del tasks[user_id]  # Удаляем все задачи пользователя
-    bot.send_message(message.chat.id, '🗑️ Все записи успешно удалены.')
-
-    # Обновление клавиатуры после удаления всех задач
-    update_keyboard(message)
+        # Обновление клавиатуры после удаления всех задач
+        update_keyboard(message)
 
 def add_task(message):
     task_name = message.text
